@@ -1,0 +1,88 @@
+# OpenCode Rules -- Design Patterns Skill
+
+These rules activate design-patterns guidance in OpenCode, ensuring the agent reaches for patterns only when the codebase has the pressure they resolve.
+
+## Core rule
+
+Pattern follows pressure. Do not recommend a pattern unless the codebase has the force it resolves. A hypothetical future is not a pressure.
+
+## Triggers -- load design-patterns context when the user
+
+- Has an if/else or switch on a type, provider, or status that keeps growing
+- Has a constructor or function call with many optional parameters
+- Has a vendor SDK leaking into domain code
+- Has logging, retry, or metrics logic copy-pasted at multiple call sites
+- Has work that must be queued, retried, scheduled, or survive a restart
+- Needs a multi-service operation to have distributed rollback
+- Has reads and writes that need different models
+- Is designing module or service boundaries
+- Has a flaky external dependency where failures cascade
+- Names a specific pattern (Strategy, Factory, Builder, etc.)
+
+## Symptom to pattern reference
+
+| Symptom in the code                                                          | Pressure                                                 | Pattern                 | Reference file                                                           |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------ |
+| `new ConcreteThing()` scattered across call sites                            | Object creation is duplicated and coupled                | Factory                 | `~/.agents/skills/design-patterns/references/factory.md`                 |
+| Constructor with 6+ params, many optional                                    | Construction is fragile and unreadable                   | Builder                 | `~/.agents/skills/design-patterns/references/builder.md`                 |
+| Vendor SDK types sprinkling through domain code                              | Vendor lock-in leaking across boundaries                 | Adapter                 | `~/.agents/skills/design-patterns/references/adapter.md`                 |
+| Callers must invoke 5 methods in the right sequence                          | Complexity hidden behind a simple operation              | Facade                  | `~/.agents/skills/design-patterns/references/facade.md`                  |
+| Dependencies created inside functions/classes                                | Tight coupling to concrete implementations               | Dependency Injection    | `~/.agents/skills/design-patterns/references/dependency-injection.md`    |
+| `if (provider === "x") ... else if ...` growing                              | Algorithm selection duplicated across call sites         | Strategy                | `~/.agents/skills/design-patterns/references/strategy.md`                |
+| One change must notify several unrelated subsystems                          | Implicit coupling between publishers and subscribers     | Observer (Pub/Sub)      | `~/.agents/skills/design-patterns/references/observer.md`                |
+| Work must survive restart, be queued, scheduled                              | Imperative actions cannot be stored or retried           | Command                 | `~/.agents/skills/design-patterns/references/command.md`                 |
+| Request passes through auth, validate, authorize, and pipeline keeps growing | Fixed pipeline of handlers with early exit               | Chain of Responsibility | `~/.agents/skills/design-patterns/references/chain-of-responsibility.md` |
+| `if (status === "running")` checks everywhere                                | State transitions scattered and ungoverned               | State                   | `~/.agents/skills/design-patterns/references/state.md`                   |
+| Work arrives faster than it can be processed                                 | Unbounded concurrency risks resource exhaustion          | Producer-Consumer       | `~/.agents/skills/design-patterns/references/producer-consumer.md`       |
+| Domain depends on database driver                                            | Business rules leak into infrastructure concerns         | Clean Architecture      | `~/.agents/skills/design-patterns/references/clean-architecture.md`      |
+| Needs multiple entry points (HTTP, CLI, queue)                               | Infrastructure coupling with multiple access paths       | Hexagonal Architecture  | `~/.agents/skills/design-patterns/references/hexagonal-architecture.md`  |
+| Reads vastly outnumber writes, different shapes                              | One model optimized for neither reads nor writes         | CQRS                    | `~/.agents/skills/design-patterns/references/cqrs.md`                    |
+| History matters for audit or rebuilding read models                          | Current state alone cannot answer "how did we get here?" | Event Sourcing          | `~/.agents/skills/design-patterns/references/event-sourcing.md`          |
+| Domain objects need persistence without SQL                                  | Persistence concern tangled with business logic          | Repository              | `~/.agents/skills/design-patterns/references/repository.md`              |
+| Multi-service operation needs atomic rollback                                | One service cannot transactionally undo another          | Saga                    | `~/.agents/skills/design-patterns/references/saga.md`                    |
+| Event published but DB write rolled back                                     | Dual-write hazard between DB and message broker          | Outbox                  | `~/.agents/skills/design-patterns/references/outbox.md`                  |
+| One flaky dependency stalls the entire system                                | Cascading failure from a slow downstream                 | Circuit Breaker         | `~/.agents/skills/design-patterns/references/circuit-breaker.md`         |
+| One dependency resource exhaustion starves others                            | Shared resource pools across differing reliability       | Bulkhead                | `~/.agents/skills/design-patterns/references/bulkhead.md`                |
+
+## Response format for pattern recommendations
+
+```
+Pressure:    what hurts today
+Pattern:     name + lighter alternative rejected
+Cost:        what gets worse
+Minimal cut: smallest version worth writing
+Deferred:    what you are not adding yet, and why
+```
+
+## Language idioms
+
+TypeScript:
+
+- Prefer discriminated unions + exhaustive switch over class hierarchies for closed variant sets
+- Strategy, Command, Factory map to function types, not classes
+- Builder is often Required<T> & Partial<Options> with a defaults merge
+- Decorator is a higher-order function or Proxy
+- Type every seam -- an adapter with loose return types defeats its purpose
+
+Go:
+
+- Interfaces at the consumer, one or two methods wide, satisfied implicitly
+- Strategy and Command map to func types. Observer maps to channels.
+- Decorator maps to func WithRetry(next Store) Store
+- Skip Singleton -- use sync.Once or pass explicitly
+- Skip Abstract Factory -- no idiomatic Go form
+
+## Red flags
+
+- Pattern stacking (pass-through layers)
+- Interface with one implementation, no test double
+- Singleton as global variable
+- CQRS or Event Sourcing chosen for elegance
+- Microservices for a small team
+- Abstraction over one vendor with no exit plan
+- Pattern-named classes (UserFactoryStrategyImpl)
+
+## Reference
+
+Full skill: `~/.agents/skills/design-patterns/SKILL.md`
+Pattern files: `~/.agents/skills/design-patterns/references/`

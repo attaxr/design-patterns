@@ -1,0 +1,99 @@
+# Cline Rules -- Design Patterns Skill
+# Copy this file to your project root as .clinerules
+#
+# These rules activate the design-patterns skill for Cline/Roo Code,
+# ensuring the agent reaches for patterns only when the pressure is real.
+
+## Skill metadata
+skill-name: design-patterns
+skill-path: ~/.agents/skills/design-patterns/
+version: 1.0.0
+
+## Triggers -- invoke the skill when any of these appear
+triggers:
+  - pattern: "if/else|switch.*(type|provider|status)"
+    description: "Growing conditional on a type discriminator"
+  - pattern: "constructor.*params|new .*\(.*,.*,.*,.*,.*,"
+    description: "Too many constructor parameters"
+  - pattern: "SDK|client|vendor.*(api|library)"
+    description: "Vendor SDK leaking into domain code"
+  - pattern: "queue|job|worker|schedule|cron"
+    description: "Work that needs scheduling or retry"
+  - pattern: "transaction|rollback|saga"
+    description: "Distributed operation needing rollback"
+  - pattern: "retry|circuit.breaker|bulkhead"
+    description: "Resilience patterns mentioned"
+  - pattern: "CQRS|Event Sourcing|event store"
+    description: "CQRS or Event Sourcing mentioned"
+  - pattern: "prop drilling|global state|useContext"
+    description: "Frontend state management"
+
+## Core rule
+# Pattern follows pressure. Never recommend a pattern unless the codebase
+# has the pressure it resolves. A hypothetical future is not a pressure.
+
+## Symptom to pattern reference
+# | Symptom | Pressure | Pattern |
+# |---------|----------|--------|
+# | `new ConcreteThing()` scattered across call sites | Object creation is duplicated and coupled | Factory |
+# | Constructor with 6+ params, many optional | Construction is fragile and unreadable | Builder |
+# | Vendor SDK types sprinkling through domain code | Vendor lock-in leaking across boundaries | Adapter |
+# | Callers must invoke 5 methods in the right sequence | Complexity hidden behind a simple operation | Facade |
+# | Dependencies created inside functions/classes | Tight coupling to concrete implementations | Dependency Injection |
+# | `if (provider === "x") ... else if ...` growing | Algorithm selection duplicated across call sites | Strategy |
+# | One change must notify several unrelated subsystems | Implicit coupling between publishers and subscribers | Observer (Pub/Sub) |
+# | Work must survive restart, be queued, scheduled | Imperative actions cannot be stored or retried | Command |
+# | Request passes through auth, validate, authorize -- pipeline keeps growing | Fixed pipeline of handlers with early exit | Chain of Responsibility |
+# | `if (status === "running")` checks everywhere | State transitions scattered and ungoverned | State |
+# | Work arrives faster than it can be processed | Unbounded concurrency risks resource exhaustion | Producer-Consumer |
+# | Domain depends on database driver | Business rules leak into infrastructure concerns | Clean Architecture |
+# | Needs multiple entry points (HTTP, CLI, queue) | Infrastructure coupling with multiple access paths | Hexagonal Architecture |
+# | Reads vastly outnumber writes, different shapes | One model optimized for neither reads nor writes | CQRS |
+# | History matters for audit, or rebuild read models from events | Current state alone cannot answer "how did we get here?" | Event Sourcing |
+# | Domain objects need persistence without SQL | Persistence concern tangled with business logic | Repository |
+# | Multi-service operation needs atomic rollback | One service cannot transactionally undo another | Saga |
+# | Event published but DB write rolled back | Dual-write hazard between DB and message broker | Outbox |
+# | One flaky dependency stalls the entire system | Cascading failure from a slow downstream | Circuit Breaker |
+# | One dependency resource exhaustion starves others | Shared resource pools across differing reliability | Bulkhead |
+
+## Response format
+# When recommending a pattern, always include:
+# 1. Pressure -- what hurts today
+# 2. Pattern -- name + lighter alternative rejected
+# 3. Cost -- what gets worse
+# 4. Minimal cut -- smallest version worth writing
+# 5. Deferred -- what you are deliberately not adding, and why
+
+## Language idioms
+
+# TypeScript:
+# - Discriminated unions + exhaustive switch over class hierarchies
+# - Strategy, Command, Factory map to function types, not classes
+# - Builder is Required<T> & Partial<Options> with a defaults merge
+# - Decorator is a higher-order function or Proxy
+# - Type every seam -- an adapter with loose return types defeats its purpose
+
+# Go:
+# - Interfaces at the consumer, one or two methods wide, satisfied implicitly
+# - Strategy and Command map to func types. Observer maps to channels.
+# - Decorator maps to func WithRetry(next Store) Store
+# - Skip Singleton -- use sync.Once or pass explicitly
+# - Skip Abstract Factory -- no idiomatic Go form
+
+## Red flags -- push back on these
+# - Pattern stacking (three+ layers of pass-through)
+# - Interface with one implementation, no test double
+# - Singleton as a global variable
+# - Event Sourcing / CQRS without audit or scaling need
+# - Microservices for a small team
+# - Vendor abstraction with one provider and no exit plan
+# - Naming classes after patterns (UserFactoryStrategyImpl)
+
+## Reference files
+# Individual pattern files in ~/.agents/skills/design-patterns/references/:
+#  - factory.md, builder.md, adapter.md, facade.md
+#  - dependency-injection.md, strategy.md, observer.md
+#  - command.md, chain-of-responsibility.md, state.md
+#  - producer-consumer.md, clean-architecture.md, hexagonal-architecture.md
+#  - repository.md, cqrs.md, event-sourcing.md
+#  - saga.md, outbox.md, circuit-breaker.md, bulkhead.md
