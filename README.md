@@ -162,7 +162,6 @@ Pattern reference files are located at:
 Full skill at: ~/.agents/skills/design-patterns/SKILL.md
 ```
 
-
 ## Usage
 
 ### How the skill works
