@@ -124,8 +124,6 @@ Install the design-patterns skill from https://github.com/attaxr/design-patterns
 4. Verify the file was placed correctly
 ```
 
-<<<<<<< HEAD
-=======
 ### Integrating into your own AGENTS.md or CLAUDE.md
 
 To permanently include this skill in your project configuration, add the following section to your existing `AGENTS.md`, `CLAUDE.md`, or equivalent project-level agent instructions file. The agent will then load the skill automatically whenever it detects relevant design pattern pressures.
@@ -139,6 +137,7 @@ The skill is installed at ~/.agents/skills/design-patterns/.
 ### When to invoke
 
 Load the design-patterns skill when:
+
 - A switch or if/else on a type, provider, or status keeps growing
 - A constructor or function call has many optional parameters
 - A vendor SDK shape leaks into domain code
@@ -163,7 +162,7 @@ Pattern reference files are located at:
 Full skill at: ~/.agents/skills/design-patterns/SKILL.md
 ```
 
->>>>>>> 37f2be49f2ccb766681014463314d8fdaa1fa469
+
 ## Usage
 
 ### How the skill works

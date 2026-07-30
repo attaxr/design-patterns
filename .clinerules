@@ -13,11 +13,7 @@ version: 1.0.0
 triggers:
   - pattern: "if/else|switch.*(type|provider|status)"
     description: "Growing conditional on a type discriminator"
-<<<<<<< HEAD
   - pattern: "constructor.*params|new .*\\(.*,.*,.*,.*,.*,"
-=======
-  - pattern: "constructor.*params|new .*\(.*,.*,.*,.*,.*,"
->>>>>>> 37f2be49f2ccb766681014463314d8fdaa1fa469
     description: "Too many constructor parameters"
   - pattern: "SDK|client|vendor.*(api|library)"
     description: "Vendor SDK leaking into domain code"
